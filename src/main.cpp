@@ -41,6 +41,32 @@ void loop() {
   Serial.print("Sensor 3: ");
   Serial.println(leitura3);
 
+  // Votador
+  bool voto1 = leitura1 < limiar;
+  bool voto2 = leitura2 < limiar;
+  bool voto3 = leitura3 < limiar;
+  bool maioria = (voto1 && voto2) || (voto1 && voto3) || (voto2 && voto3);
+
+  // Tabela verdade do votador:
+  // Voto1 | Voto2 | Voto3 | Maioria
+  //   0   |   0   |   0   |   0
+  //   0   |   0   |   1   |   0
+  //   0   |   1   |   0   |   0
+  //   0   |   1   |   1   |   1
+  //   1   |   0   |   0   |   0
+  //   1   |   0   |   1   |   1
+  //   1   |   1   |   0   |   1
+  //   1   |   1   |   1   |   1
+
+  // Acende o LED se a maioria dos sensores detectar luz abaixo do limiar
+  if (maioria) {
+    digitalWrite(pinoLED, HIGH);
+    Serial.println("LED ACESO");
+  } else {
+    digitalWrite(pinoLED, LOW);
+    Serial.println("LED APAGADO");
+  }
+
   // Pequeno atraso para não inundar o console
   delay(500); 
 }
