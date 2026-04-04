@@ -19,12 +19,33 @@ const int pinoLDR1 = 32;
 const int pinoLDR2 = 35;
 const int pinoLDR3 = 34;
 
-const int limiar = 2000;
+// LEDs auxiliares para indicar o voto de cada sensor
+const int pinoLEDLDR1 = 26;
+const int pinoLEDLDR2 = 25;
+const int pinoLEDLDR3 = 33;
+
+int limiar = 2000;
+
 
 void setup() {
   Serial.begin(9600);
   Serial.println("--- Teste de uso do LDR  ---");
   pinMode(pinoLED, OUTPUT);
+  pinMode(pinoLEDLDR1, OUTPUT);
+  pinMode(pinoLEDLDR2, OUTPUT);
+  pinMode(pinoLEDLDR3, OUTPUT);
+
+  // Configura limiar
+  delay(1000);
+  Serial.print("Digite o limiar para acender o LED (padrão ");
+  Serial.print(limiar);
+  Serial.print("): ");
+  while (!Serial.available());
+  String entrada = Serial.readString();
+  if (entrada.length() > 0) {
+    int valor = entrada.toInt();
+    if (valor > 0) limiar = valor;
+  }
 }
 
 void loop() {
@@ -67,6 +88,17 @@ void loop() {
     Serial.println("LED APAGADO");
   }
 
+  // Acende os LEDs individuais para cada sensor
+  digitalWrite(pinoLEDLDR1, voto1 ? HIGH : LOW);
+  digitalWrite(pinoLEDLDR2, voto2 ? HIGH : LOW);
+  digitalWrite(pinoLEDLDR3, voto3 ? HIGH : LOW);
+
+  if (voto1 == voto2 && voto2 == voto3) {
+    Serial.println("CONSENSO: todos os sensores concordam.");
+  } else {
+    Serial.println("FALHA MASCARADA: sensores discordantes.");
+  }
+  
   // Pequeno atraso para não inundar o console
   delay(500); 
 }
