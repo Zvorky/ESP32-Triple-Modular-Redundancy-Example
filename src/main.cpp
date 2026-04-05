@@ -1,75 +1,78 @@
 /*
-Triple Modular Redundancy (TMR) com LDRs
+Triple Modular Redundancy (TMR) with LDRs
 Enzo Zavorski Delevatti - 199575
 
-Engenharia de Computação - UPF
-Tolerência a Falhas e Sistemas de Tempo Real
+Computer Engineering - UPF
+Fault Tolerance and Real-Time Systems
 Professor Marcelo Trindade Rebonatto
 
-Abril 2026
+April 2026
 */
 
 
 #include <Arduino.h>
 
 
-// Definição dos pinos analógicos (ADC1)
-const int pinoLED = 2;
-const int pinoLDR1 = 32;
-const int pinoLDR2 = 35;
-const int pinoLDR3 = 34;
+// Analog pin definitions (ADC1)
+const int LED = 2;
+const int LDR1 = 32;
+const int LDR2 = 35;
+const int LDR3 = 34;
 
-// LEDs auxiliares para indicar o voto de cada sensor
-const int pinoLEDLDR1 = 26;
-const int pinoLEDLDR2 = 25;
-const int pinoLEDLDR3 = 33;
+// Auxiliary LEDs to indicate each sensor's vote
+const int AUXLED1 = 26;
+const int AUXLED2 = 25;
+const int AUXLED3 = 33;
 
-int limiar = 2000;
+int threshold = 2000;
 
 
 void setup() {
-  Serial.begin(9600);
-  Serial.println("--- Teste de uso do LDR  ---");
-  pinMode(pinoLED, OUTPUT);
-  pinMode(pinoLEDLDR1, OUTPUT);
-  pinMode(pinoLEDLDR2, OUTPUT);
-  pinMode(pinoLEDLDR3, OUTPUT);
+  pinMode(LED, OUTPUT);
+  pinMode(AUXLED1, OUTPUT);
+  pinMode(AUXLED2, OUTPUT);
+  pinMode(AUXLED3, OUTPUT);
 
-  // Configura limiar
+  Serial.begin(9600);
   delay(1000);
-  Serial.print("Digite o limiar para acender o LED (padrão ");
-  Serial.print(limiar);
+  Serial.println("--- TMR Example ---");
+
+  // Configure threshold
+  Serial.print("Enter threshold to turn on the LED (default ");
+  Serial.print(threshold);
   Serial.print("): ");
-  while (!Serial.available());
-  String entrada = Serial.readString();
-  if (entrada.length() > 0) {
-    int valor = entrada.toInt();
-    if (valor > 0) limiar = valor;
+
+  while (!Serial.available()); // Wait for user input
+  String input = Serial.readString();
+
+  if (input.length() > 0) {
+    int value = input.toInt();
+    if (value > 0) threshold = value;
   }
 }
 
 void loop() {
-  // Realiza a leitura do sensor
-  int leitura1 = analogRead(pinoLDR1);
-  int leitura2 = analogRead(pinoLDR2);
-  int leitura3 = analogRead(pinoLDR3);
+  // Read the sensors
+  int ldr1 = analogRead(LDR1);
+  int ldr2 = analogRead(LDR2);
+  int ldr3 = analogRead(LDR3);
 
-  // Exibe os valores formatados para fácil leitura
+  // Print the formatted values for easy reading
   Serial.print("\nSensor 1: ");
-  Serial.println(leitura1);
+  Serial.println(ldr1);
   Serial.print("Sensor 2: ");
-  Serial.println(leitura2);
+  Serial.println(ldr2);
   Serial.print("Sensor 3: ");
-  Serial.println(leitura3);
+  Serial.println(ldr3);
 
-  // Votador
-  bool voto1 = leitura1 < limiar;
-  bool voto2 = leitura2 < limiar;
-  bool voto3 = leitura3 < limiar;
-  bool maioria = (voto1 && voto2) || (voto1 && voto3) || (voto2 && voto3);
+  // Voter
+  bool vote1 = ldr1 < threshold;
+  bool vote2 = ldr2 < threshold;
+  bool vote3 = ldr3 < threshold;
+  bool majority = (vote1 && vote2) || (vote1 && vote3) || (vote2 && vote3);
 
-  // Tabela verdade do votador:
-  // Voto1 | Voto2 | Voto3 | Maioria
+  // Voter Truth Table:
+  // vote1 | vote2 | vote3 | Majority
   //   0   |   0   |   0   |   0
   //   0   |   0   |   1   |   0
   //   0   |   1   |   0   |   0
@@ -79,26 +82,26 @@ void loop() {
   //   1   |   1   |   0   |   1
   //   1   |   1   |   1   |   1
 
-  // Acende o LED se a maioria dos sensores detectar luz abaixo do limiar
-  if (maioria) {
-    digitalWrite(pinoLED, HIGH);
-    Serial.println("LED ACESO");
+  // Turn the LED on if the majority of sensors detect light below the threshold
+  if (majority) {
+    digitalWrite(LED, HIGH);
+    Serial.println("LED ON");
   } else {
-    digitalWrite(pinoLED, LOW);
-    Serial.println("LED APAGADO");
+    digitalWrite(LED, LOW);
+    Serial.println("LED OFF");
   }
 
-  // Acende os LEDs individuais para cada sensor
-  digitalWrite(pinoLEDLDR1, voto1 ? HIGH : LOW);
-  digitalWrite(pinoLEDLDR2, voto2 ? HIGH : LOW);
-  digitalWrite(pinoLEDLDR3, voto3 ? HIGH : LOW);
+  // Turn on the individual LEDs for each sensor
+  digitalWrite(AUXLED1, vote1 ? HIGH : LOW);
+  digitalWrite(AUXLED2, vote2 ? HIGH : LOW);
+  digitalWrite(AUXLED3, vote3 ? HIGH : LOW);
 
-  if (voto1 == voto2 && voto2 == voto3) {
-    Serial.println("CONSENSO: todos os sensores concordam.");
+  if (vote1 == vote2 && vote2 == vote3) {
+    Serial.println("CONSENSUS: all sensors agree.");
   } else {
-    Serial.println("FALHA MASCARADA: sensores discordantes.");
+    Serial.println("MASKED FAILURE: sensors disagree.");
   }
   
-  // Pequeno atraso para não inundar o console
+  // Small delay to avoid flooding the console
   delay(500); 
 }
