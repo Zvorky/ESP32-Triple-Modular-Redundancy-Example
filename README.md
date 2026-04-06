@@ -1,7 +1,8 @@
 # Triple Modular Redundancy (TMR) with LDRs
 A practical implementation of Fault Tolerance and Real-Time Systems concepts on ESP32.
 
-[Leia a versão em Português (LEIAME.md)](LEIAME.md)
+- [Leia a versão em Português (LEIAME.md)](LEIAME.md)
+- [ToDo list](ToDo.md)
 
 ---
 

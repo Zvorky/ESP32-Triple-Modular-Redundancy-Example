@@ -1,7 +1,8 @@
 # Redundância Modular Tripla (TMR) com LDRs
 Uma implementação prática de conceitos de Tolerância a Falhas e Sistemas de Tempo Real no ESP32.
 
-[Read the English version (README.md)](README.md)
+- [Read the English version (README.md)](README.md)
+- [Lista de Tarefas](ToDo.md)
 
 ---
 
