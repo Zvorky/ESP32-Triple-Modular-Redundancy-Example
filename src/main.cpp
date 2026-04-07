@@ -14,17 +14,22 @@ April 2026
 
 
 // Analog pin definitions (ADC1)
-const int LED = 2;
-const int LDR1 = 32;
-const int LDR2 = 35;
-const int LDR3 = 34;
+#define LED 2
+#define LDR1 32
+#define LDR2 35
+#define LDR3 34
 
 // Auxiliary LEDs to indicate each sensor's vote
-const int AUXLED1 = 26;
-const int AUXLED2 = 25;
-const int AUXLED3 = 33;
+#define AUXLED1 26
+#define AUXLED2 25
+#define AUXLED3 33
 
-int threshold = 2000;
+int threshold = 2000; // 0-4095 for 12-bit ADC
+
+// Fail Detection and Isolation variables
+bool isActive1 = true;
+bool isActive2 = true;
+bool isActive3 = true;
 
 
 void setup() {
@@ -34,19 +39,23 @@ void setup() {
   pinMode(AUXLED3, OUTPUT);
 
   Serial.begin(9600);
-  delay(1000);
+  delay(2000);
   Serial.println("--- TMR Example ---");
 
   // Configure threshold
   Serial.print("Enter threshold to turn on the LED (default ");
   Serial.print(threshold);
-  Serial.print("): ");
+  Serial.print(") [0-4095]: ");
 
   while (!Serial.available()); // Wait for user input
   String input = Serial.readString();
 
   if (input.length() > 0) {
     int value = input.toInt();
+    if (value > 4095) {
+      value = 4095; // Clamp to max ADC value
+      Serial.println("Value clamped to 4095.");
+    }
     if (value > 0) threshold = value;
   }
 }
@@ -59,13 +68,24 @@ void loop() {
 
   // Print the formatted values for easy reading
   Serial.print("\nSensor 1: ");
-  Serial.println(ldr1);
+  Serial.print(ldr1);
+  if (isActive1) Serial.println(" \tOK");
+  else Serial.println(" \tISOLATED");
   Serial.print("Sensor 2: ");
-  Serial.println(ldr2);
+  Serial.print(ldr2);
+  if (isActive2) Serial.println(" \tOK");
+  else Serial.println(" \tISOLATED");
   Serial.print("Sensor 3: ");
-  Serial.println(ldr3);
+  Serial.print(ldr3);
+  if (isActive3) Serial.println(" \tOK");
+  else Serial.println(" \tISOLATED");
 
   // Voter
+  int activeSensors = 0;
+  if (isActive1) activeSensors++;
+  if (isActive2) activeSensors++;
+  if (isActive3) activeSensors++;
+
   bool vote1 = ldr1 < threshold;
   bool vote2 = ldr2 < threshold;
   bool vote3 = ldr3 < threshold;
