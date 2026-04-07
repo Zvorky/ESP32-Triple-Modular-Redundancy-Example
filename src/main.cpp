@@ -11,6 +11,7 @@ April 2026
 
 
 #include <Arduino.h>
+#include "utils.h"
 
 
 // Analog pin definitions (ADC1)
@@ -40,24 +41,21 @@ void setup() {
 
   Serial.begin(9600);
   delay(2000);
-  Serial.println("--- TMR Example ---");
+  Serial.println("\n\n---[ TMR Example ]---");
 
   // Configure threshold
-  Serial.print("Enter threshold to turn on the LED (default ");
-  Serial.print(threshold);
-  Serial.print(") [0-4095]: ");
+  String s = " ";
+  String msg = "Enter threshold to turn on the LED (default " + String(threshold) + ") [0-4095]: ";
+  while (!isNumber(s) && s != "") s = input(msg, false);
 
-  while (!Serial.available()); // Wait for user input
-  String input = Serial.readString();
-
-  if (input.length() > 0) {
-    int value = input.toInt();
-    if (value > 4095) {
-      value = 4095; // Clamp to max ADC value
-      Serial.println("Value clamped to 4095.");
-    }
-    if (value > 0) threshold = value;
+  int value = s.toInt();
+  if (value > 4095) {
+    value = 4095; // Clamp to max ADC value
+    Serial.println("Value clamped to 4095.");
   }
+  if (value > 0) threshold = value;
+  Serial.print("Threshold set to: ");
+  Serial.println(threshold);
 }
 
 void loop() {
