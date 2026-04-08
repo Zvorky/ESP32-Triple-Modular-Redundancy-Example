@@ -47,7 +47,7 @@ void setup() {
 
   // Configure threshold
   String s = " ";
-  String msg = "Enter threshold to turn on the LED (default " + String(threshold) + ") [0-4095]: ";
+  String msg = "Enter threshold to turn on the LED (default " + String(threshold) + ") [1-4095] (Enter|0 for default): ";
   while (!isNumber(s) && s != "") s = input(msg, false);
 
   int value = s.toInt();
@@ -55,9 +55,12 @@ void setup() {
     value = 4095; // Clamp to max ADC value
     Serial.println("Value clamped to 4095.");
   }
-  if (value > 0) threshold = value;
-  Serial.print("Threshold set to: ");
-  Serial.println(threshold);
+  if (value > 0) {
+    threshold = value;
+    Serial.print("Threshold set to: ");
+    Serial.println(threshold);
+  } 
+  else Serial.println("Using default threshold: " + String(threshold));
 }
 
 void loop() {
@@ -153,10 +156,13 @@ void loop() {
     Serial.println("LED OFF");
   }
 
-  // Turn on the individual LEDs for each sensor
-  digitalWrite(AUXLED1, vote1 ? HIGH : LOW);
-  digitalWrite(AUXLED2, vote2 ? HIGH : LOW);
-  digitalWrite(AUXLED3, vote3 ? HIGH : LOW);
+  // Turn on the individual LEDs for each sensor, blink if the sensor is isolated
+  if (isActive1) digitalWrite(AUXLED1, vote1 ? HIGH : LOW);
+  else digitalWrite(AUXLED1, !digitalRead(AUXLED1));
+  if (isActive2) digitalWrite(AUXLED2, vote2 ? HIGH : LOW);
+  else digitalWrite(AUXLED2, !digitalRead(AUXLED2));
+  if (isActive3) digitalWrite(AUXLED3, vote3 ? HIGH : LOW);
+  else digitalWrite(AUXLED3, !digitalRead(AUXLED3));
 
   delay(DELAY);
 }
