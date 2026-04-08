@@ -16,9 +16,9 @@ This stage upgrades the system from simply masking faults to actively detecting 
 
 - [x] Introduce active status tracking variables for each sensor (e.g., `bool isActive1 = true;`).
 - [x] Implement a pre-processing step to count the number of currently active sensors (`activeSensors`) before calculating the final decision.
-- [ ] Only count votes (`yesVotes`) from sensors that are currently marked as active.
-- [ ] Compare the majority decision (`finalDecision`) against each individual sensor's vote.
-- [ ] Isolate a discordant sensor by updating its status to inactive (`isActive = false`) and emit an alert to the serial monitor (e.g., "ALERT: Sensor 1 failed and was ISOLATED").
+- [x] Only count votes (`yesVotes`) from sensors that are currently marked as active.
+- [x] Compare the majority decision (`finalDecision`) against each individual sensor's vote.
+- [x] Isolate a discordant sensor by updating its status to inactive (`isActive = false`) and emit an alert to the serial monitor (e.g., "ALERT: Sensor 1 failed and was ISOLATED").
 - [x] Add a visual log to display the overall health of the system (e.g., `Health [1, 2, 3] : [OK | --]`).
 
 ## 3. Graceful Degradation & Fail-Safe Mechanisms

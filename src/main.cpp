@@ -14,6 +14,8 @@ April 2026
 #include "utils.h"
 
 
+#define DELAY 1000 // Loop Delay in milliseconds
+
 // Analog pin definitions (ADC1)
 #define LED 2
 #define LDR1 32
@@ -75,8 +77,8 @@ void loop() {
   else Serial.println(" \tISOLATED");
   Serial.print("Sensor 3: ");
   Serial.print(ldr3);
-  if (isActive3) Serial.println(" \tOK");
-  else Serial.println(" \tISOLATED");
+  if (isActive3) Serial.println(" \tOK\n");
+  else Serial.println(" \tISOLATED\n");
 
   // Voter
   int activeSensors = 0;
@@ -87,7 +89,49 @@ void loop() {
   bool vote1 = ldr1 < threshold;
   bool vote2 = ldr2 < threshold;
   bool vote3 = ldr3 < threshold;
-  bool majority = (vote1 && vote2) || (vote1 && vote3) || (vote2 && vote3);
+  
+  bool majority = false;
+  if (activeSensors == 3) {
+    majority = (vote1 && vote2) || (vote1 && vote3) || (vote2 && vote3);
+    // Isolate any sensor that disagrees with the majority
+    int isolated = 0;
+    if (vote1 != majority) {
+      isActive1 = false;
+      isolated = 1;
+    }
+    else if (vote2 != majority) {
+      isActive2 = false;
+      isolated = 2;
+    }
+    else if (vote3 != majority) {
+      isActive3 = false;
+      isolated = 3;
+    }
+
+    if (isolated == 0) Serial.println("CONSENSUS: all sensors agree.");
+    else Serial.println("MASKED FAILURE: sensors disagree.\nISOLATED Sensor " + String(isolated) + ".");
+  }
+  else {
+    int votes = 0;
+    if (isActive1 && vote1) votes++;
+    if (isActive2 && vote2) votes++;
+    if (isActive3 && vote3) votes++;
+
+    if (activeSensors == 2) { // comparador
+      if (votes == 1)
+        Serial.println("!!! CRITICAL ERROR !!!\nDisagreement detected with only 2 active sensors!");
+      else {
+        majority = votes >= 2;
+        Serial.println("CONSENSUS: both active sensors agree.");
+      }
+    }
+    else if (activeSensors == 1) {
+      majority = votes == 1; // the single active sensor decides
+      Serial.println("WARNING: only one active sensor remains!");
+    }
+    else Serial.println("TOTAL SYSTEM FAILURE\nNo active sensors remain!");
+  }
+
 
   // Voter Truth Table:
   // vote1 | vote2 | vote3 | Majority
@@ -114,12 +158,5 @@ void loop() {
   digitalWrite(AUXLED2, vote2 ? HIGH : LOW);
   digitalWrite(AUXLED3, vote3 ? HIGH : LOW);
 
-  if (vote1 == vote2 && vote2 == vote3) {
-    Serial.println("CONSENSUS: all sensors agree.");
-  } else {
-    Serial.println("MASKED FAILURE: sensors disagree.");
-  }
-  
-  // Small delay to avoid flooding the console
-  delay(500); 
+  delay(DELAY);
 }

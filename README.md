@@ -35,6 +35,17 @@ If any one of the three components fails or produces an erroneous reading, the o
 
 In this project, we use three Light Dependent Resistors (LDRs) to measure ambient light. Even if one LDR is physically blocked, damaged, or disconnected, the system will still make the correct decision based on the remaining two functional sensors.
 
+### What is Fault Detection and Isolation (FDI)?
+**Fault Detection and Isolation (FDI)** is the set of mechanisms used to identify that a fault has occurred and determine which component is responsible for it. In a redundant architecture, masking the fault is only part of the solution; the system also benefits from explicitly flagging the disagreement and removing the suspicious element from the decision process.
+
+In this project, FDI is performed by comparing the three sensor votes against the TMR majority result:
+
+- **Fault Detection:** when one sensor vote differs from the other two, the system detects a disagreement.
+- **Fault Isolation:** the sensor that disagrees with the majority is marked as isolated and is no longer considered an active sensor in the next iterations.
+- **Degraded Operation:** after isolation, the system keeps running with the remaining active sensors and reports whether they still agree.
+
+This means the example goes beyond simple fault masking: it also demonstrates how a redundant system can identify the faulty channel and continue operating in a degraded but controlled mode.
+
 ---
 
 ## 🛠️ Hardware Requirements
@@ -61,9 +72,16 @@ In this project, we use three Light Dependent Resistors (LDRs) to measure ambien
 
 1.  **Reading & Discretization:** The system reads the analog values from the 3 LDRs. Since LDRs are analog and TMR uses boolean logic, the code discretizes the readings using a defined threshold (default: `2000`). If the reading is below the threshold (dark), the sensor casts a vote (`true` or `1`).
 2.  **The Voter:** The ESP32 acts as the voter, applying the TMR boolean logic to the three votes. 
-3.  **Actuation:** If the majority (at least 2 out of 3 sensors) detect a dark environment, the main LED turns on.
-4.  **System Diagnostics:** * **Total Consensus:** If all three sensors agree, the system logs `CONSENSUS`.
-    * **Masked Fault:** If one sensor disagrees (e.g., it is covered or broken), the system logs `MASKED FAILURE` but continues to operate correctly.
+3.  **Fault Detection and Isolation:** With three active sensors, if one vote differs from the majority, the ESP32 reports `MASKED FAILURE`, identifies the disagreeing sensor, and marks it as `ISOLATED`.
+4.  **Degraded Operation:** After isolation, the system keeps working with the remaining sensors. With two active sensors, the architecture effectively becomes a **2MR (Dual Modular Redundancy)** system, which uses a comparator instead of majority voting. If both active sensors agree, the system reports `CONSENSUS`; if they disagree, it reports a `CRITICAL ERROR` because there is no longer enough redundancy to isolate another fault safely.
+5.  **Actuation:** If the active voting result indicates a dark environment, the main LED turns on.
+
+### FDI Behavior in Practice
+
+- **3 active sensors:** TMR majority voting masks one faulty reading and isolates the disagreeing sensor.
+- **2 active sensors:** the system degrades to **2MR**, using a comparator instead of majority voting; it can detect disagreement but cannot safely determine which of the two sensors is wrong.
+- **1 active sensor:** the system still produces an output, but redundancy has been lost and the decision depends on a single channel.
+- **0 active sensors:** the system reports total failure.
 
 ## 💻 Usage
 1.  Upload the code to your ESP32.
