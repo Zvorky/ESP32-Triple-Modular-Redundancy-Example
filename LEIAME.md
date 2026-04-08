@@ -80,11 +80,30 @@ Com isso, o exemplo não demonstra apenas o mascaramento de falha, mas também a
 
 - **3 sensores ativos:** a votação TMR mascara uma leitura incorreta e isola o sensor que discordou.
 - **2 sensores ativos:** o sistema degrada para **2MR**, usando um comparador em vez de votação por maioria; ele detecta discordância, mas não consegue dizer com segurança qual dos dois sensores está errado.
-- **1 sensor ativo:** o sistema ainda produz saída, mas perde a redundância e a decisão passa a depender de um único canal.
-- **0 sensores ativos:** o sistema informa falha total.
+- **1 sensor ativo:** o sistema ainda produz saída (modo degradado), mas perde a redundância e a decisão passa a depender de um único canal.
+- **0 sensores ativos:** o sistema informa falha total e força saída em fail-safe (LED principal desligado).
+
+### Política Atual (Implementada)
+
+- **Política de threshold:** se o valor digitado for vazio ou `<= 0`, o sistema mantém o valor padrão do threshold.
+- **Política de fail-safe:** a saída fail-safe (LED principal desligado) é ativada em estados de falha explícita (por exemplo, discordância com apenas 2 sensores ativos) e em falha total.
+- **Modo degradado com 1 canal:** com apenas 1 sensor ativo, o sistema continua operando e confia no canal remanescente, emitindo aviso de perda de redundância.
+
+Essas decisões refletem o estado atual do sistema dentro do escopo acadêmico do projeto.
 
 ## 💻 Uso
 1.  Faça o upload do código para o seu ESP32.
 2.  Abra o Monitor Serial na velocidade de `9600` baud.
 3.  (Opcional) Digite um novo valor de limiar no console logo após a inicialização.
 4.  Teste a tolerância a falhas tampando apenas um LDR com o dedo. Observe que o LED principal não apaga/acende de forma errônea, demonstrando o **mascaramento da falha** na prática.
+
+---
+
+## 🔭 Futuros
+Melhorias planejadas que ainda não fazem parte da implementação atual.
+
+- Lógica de isolamento e reativação mais robusta com contadores de discordância/concordância por sensor.
+- Filtro opcional das leituras dos sensores (ex.: mediana/média móvel) antes da discretização do voto.
+- Calibração e ajuste por sensor (ganho/offset), com modos opcionais de inicialização: Nenhum, Manual e Automático.
+- Diagnóstico de circuito aberto com checagens de plausibilidade ao longo do tempo, em vez de regra por valor bruto isolado.
+- Telemetria estruturada e controle de verbosidade de logs (completos vs apenas eventos importantes).

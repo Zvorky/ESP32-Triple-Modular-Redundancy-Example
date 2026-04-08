@@ -80,11 +80,30 @@ This means the example goes beyond simple fault masking: it also demonstrates ho
 
 - **3 active sensors:** TMR majority voting masks one faulty reading and isolates the disagreeing sensor.
 - **2 active sensors:** the system degrades to **2MR**, using a comparator instead of majority voting; it can detect disagreement but cannot safely determine which of the two sensors is wrong.
-- **1 active sensor:** the system still produces an output, but redundancy has been lost and the decision depends on a single channel.
-- **0 active sensors:** the system reports total failure.
+- **1 active sensor:** the system still produces an output (degraded mode), but redundancy has been lost and the decision depends on a single channel.
+- **0 active sensors:** the system reports total failure and forces fail-safe output (main LED off).
+
+### Current Policy (Implemented)
+
+- **Threshold input policy:** if the entered threshold is empty or `<= 0`, the system keeps the default threshold value.
+- **Fail-safe policy:** fail-safe output (main LED off) is enforced on explicit failure states (e.g., disagreement with only 2 active sensors) and on total failure.
+- **Single-channel degraded mode:** with only 1 active sensor, the system keeps operating and trusts the remaining channel while warning about lost redundancy.
+
+These choices follow the current academic scope of the project and are documented as the present system behavior.
 
 ## 💻 Usage
 1.  Upload the code to your ESP32.
 2.  Open the Serial Monitor at `9600` baud rate.
 3.  (Optional) Enter a custom light threshold via the serial input when prompted.
 4.  Test the fault tolerance by covering one LDR with your finger. Notice that the main LED does not change state incorrectly, demonstrating **fault masking**.
+
+---
+
+## 🔭 Future Work
+Planned improvements that are not implemented yet.
+
+- Robust isolation and recovery logic using per-sensor disagreement/agreement counters.
+- Optional sensor filtering (e.g., median/moving-average) before vote discretization.
+- Per-sensor calibration and tuning (gain/offset), with optional startup modes: None, Manual, Automatic.
+- Better open-circuit diagnostics based on temporal plausibility checks, instead of a single raw-value rule.
+- Structured telemetry output and configurable log verbosity (full vs important events only).

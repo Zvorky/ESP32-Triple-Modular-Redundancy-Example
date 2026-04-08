@@ -24,10 +24,11 @@ This stage upgrades the system from simply masking faults to actively detecting 
 ## 3. Graceful Degradation & Fail-Safe Mechanisms
 With sensors being isolated, the system must dynamically adapt its decision-making rules based on the remaining functional hardware.
 
-- [ ] Implement the rule for **3 Active Sensors**: The decision requires 2 or more votes to function properly.
-- [ ] Implement the rule for **2 Active Sensors**: Both remaining sensors MUST agree for the system to operate.
-- [ ] Implement a **Fail-Safe state**: If only 2 sensors are active and they disagree, force the system into a safe state (e.g., turn off the actuator) and log a critical error ("CRITICAL ERROR: Remaining sensors disagree. Entering Fail-Safe state.").
-- [ ] Implement the rule for **1 or 0 Active Sensors**: Declare a total system failure, emit a warning ("TOTAL SYSTEM FAILURE: All sensors isolated."), and halt operations since there is no longer any redundancy.
+- [x] Implement the rule for **3 Active Sensors**: The decision requires 2 or more votes to function properly.
+- [x] Implement the rule for **2 Active Sensors**: Both remaining sensors MUST agree for the system to operate.
+- [x] Implement a **Fail-Safe state**: If only 2 sensors are active and they disagree, force the system into a safe state (turn off the actuator) and log a critical error.
+- [x] Implement the rule for **1 Active Sensor**: Keep the system operating in degraded mode using the single remaining sensor, while emitting a warning.
+- [x] Implement the rule for **0 Active Sensors**: Declare total system failure, log critical status, and force fail-safe output (actuator off).
 
 ## 4. Self-Healing
 Advanced fault tolerance: distinguishing between permanent hardware failure and transient faults (e.g., a temporary shadow or loose wire).
@@ -35,3 +36,13 @@ Advanced fault tolerance: distinguishing between permanent hardware failure and 
 - [ ] Track isolated sensors to check if their readings start matching the active majority again.
 - [ ] Implement a timer to require the isolated sensor to maintain agreement for a specific duration (e.g., 10 seconds).
 - [ ] Reintegrate the sensor by setting its active status back to `true`, assuming the fault was transient, and log the recovery ("RECOVERY: Sensor 1 reintegrated.").
+
+## 5. Future Improvements (Backlog)
+Planned improvements that are intentionally not part of the current implementation state.
+
+- [ ] Add noise-robust isolation logic with disagreement/agreement counters per sensor (configurable threshold).
+- [ ] Add optional filtering for sensor readings (e.g., median or moving average) before voting.
+- [ ] Add per-sensor tuning gain/offset and optional startup calibration modes: None, Manual, Automatic.
+- [ ] Improve open-circuit diagnostics using plausibility checks over time (stuck value, saturation persistence, impossible transitions), not only a single raw value.
+- [ ] Add structured telemetry logs for post-analysis (raw reads, filtered reads, votes, active mask, health, final decision).
+- [ ] Add configurable log verbosity: full logs (all channels/states) or important events only.
